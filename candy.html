@@ -1,0 +1,114 @@
+<html> 
+  <head>
+   <title>Candy Store Inventory Management</title>
+  </head>
+  <body>
+    <h1><u>Candy Store</u></h1>
+    <form id="candy-store" method="POST" action="/candy">
+      Name
+      <input type="text" name="name" required placeholder="Enter product name"/> 
+      Description
+      <input type="text" name="description" placeholder="Enter details" required/>
+      Price
+      <input type="number" name="price" placeholder="Enter price"/>
+      Quantity
+      <input type="number" name="quantity" placeholder="Enter quantity"/>
+      <button> Add Items </button>    
+    </form>
+    <br><br>
+    <ul id="Items"></ul>
+    <script>
+      window.onload = function() {
+        fetch('/candy')
+          .then(response => response.json())
+          .then(data => {
+            const A = document.getElementById('Items');
+              A.innerHTML = '';
+              data.forEach(element => {
+              const B = document.createElement('li');
+              B.textContent = `Name: ${element.name} | Description: ${element.description} | Price: ${element.price}  | Quantity: ${element.quantity}`;
+              
+              const quantityElement = document.createElement('span');
+              B.appendChild(quantityElement);
+              const buy1 = document.createElement('input');
+              buy1.type = 'button';
+              buy1.value = 'Buy1';
+              buy1.onclick = () => {
+                updateCandies(element.id, 1, element.quantity, quantityElement);
+              };
+
+              const buy2 = document.createElement('input');
+              buy2.type = 'button';
+              buy2.value = 'Buy2';
+              buy2.onclick = () => {
+                updateCandies(element.id, 2, element.quantity, quantityElement);
+              };
+
+              const buy3 = document.createElement('input');
+              buy3.type = 'button';
+              buy3.value = 'Buy3';
+              buy3.onclick = () => {
+                updateCandies(element.id, 3, element.quantity, quantityElement);
+              };
+
+              const del = document.createElement('input');
+              del.type = 'button';
+              del.value = 'Delete';
+              del.onclick = () => {
+                DelCandy(element.id)
+              };
+
+
+              B.appendChild(buy1);
+              B.appendChild(buy2);
+              B.appendChild(buy3);
+              B.appendChild(del);
+              A.appendChild(B);
+            });
+          });
+
+          function updateCandies(id, quantity, initialQuantity, quantityElement) {
+            if (initialQuantity >= quantity) {
+              const updatedQuantity = Math.max(initialQuantity - quantity);
+              quantityElement.textContent =  updatedQuantity;
+
+              const data = {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: updatedQuantity })
+              };
+
+              fetch(`/candy/${id}`, data)
+                .then(response => response.json())
+                .then(updatedData => {
+                  location.reload();
+                })
+                .catch(error => {
+                  console.error('Error updating quantity:', error);
+                });
+            }     
+            else {
+              alert("Item is out of stock");
+            }
+          }
+
+          function DelCandy(id)
+          {
+            if (!id) 
+            {
+             console.error('Invalid ID');
+             return;
+            }
+
+            fetch(`/candy/${id}`, {
+            method: 'DELETE',
+                   })
+                  .then(response => response.json())
+                  .catch(error => console.error(error));
+                  location.reload()
+        
+          }
+      }
+    </script>
+  </body>
+</html>
